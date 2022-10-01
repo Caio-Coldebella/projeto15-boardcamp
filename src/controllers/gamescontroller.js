@@ -4,7 +4,7 @@ export async function getgames(req,res){
     const name = req.query.name;
     try {
         if(name!= undefined){
-            const games = await connection.query(`SELECT * FROM games WHERE name LIKE('${name}%')`);
+            const games = await connection.query(`SELECT * FROM games WHERE name LIKE INITCAP('${name}%')`);
             res.send(games.rows);
         }else{
             const games = await connection.query('SELECT * FROM games');
