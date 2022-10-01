@@ -15,3 +15,15 @@ export async function getgames(req,res){
         res.sendStatus(500);
     }
 };
+
+export async function postgames(req,res){
+    const data = res.locals.data;
+    try {
+        await connection.query('INSERT INTO games (name,image,"stockTotal","categoryId","pricePerDay") VALUES ($1,$2,$3,$4,$5)',
+        [data.name,data.image,data.stockTotal,data.categoryId,data.pricePerDay]);
+        res.sendStatus(201);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+}
