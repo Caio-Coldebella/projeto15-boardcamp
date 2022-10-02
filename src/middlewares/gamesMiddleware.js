@@ -18,8 +18,8 @@ export default async function gamesMiddleware(req,res,next){
     try {
         const result = await connection.query('SELECT * FROM games');
         const categ = await connection.query('SELECT id FROM categories');
-        const hasequal = result.rows.find((item)=> item.name === data.name);
-        const existsid = categ.rows.find((item)=> item.id === data.categoryId);
+        const hasequal = result.rows?result.rows.find((item)=> item.name === data.name):undefined;
+        const existsid = result.rows?categ.rows.find((item)=> item.id === data.categoryId):undefined;
         if(hasequal){
             res.sendStatus(409);
             return;

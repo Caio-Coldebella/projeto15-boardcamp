@@ -46,7 +46,7 @@ export async function customersputMiddleware(req,res,next){
     }
     try {
         const result = await connection.query('SELECT * FROM customers');
-        const hasequal = result.rows.find((item)=> item.cpf === data.cpf);
+        const hasequal = result.rows?result.rows.find((item)=> item.cpf === data.cpf):undefined;
         if(hasequal && hasequal.id != id){
             res.sendStatus(409);
             return;

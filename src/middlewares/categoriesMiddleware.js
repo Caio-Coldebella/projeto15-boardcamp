@@ -13,7 +13,7 @@ export default async function categoriesMiddleware(req,res,next){
     }
     try {
         const result = await connection.query('SELECT * FROM categories');
-        const hasequal = result.rows.find((item)=> item.name === data.name);
+        const hasequal = result.rows?result.rows.find((item)=> item.name === data.name):undefined;
         if(hasequal){
             res.sendStatus(409);
             return;
