@@ -19,7 +19,7 @@ export async function getbyid(req,res){
     const id = req.params.id;
     try {
         const cust = await connection.query('SELECT * FROM customers WHERE id=$1',[id]);
-        res.send(cust.rows);
+        res.send(cust.rows[0]);
     } catch (error) {
         console.error(error);
         res.sendStatus(500);
