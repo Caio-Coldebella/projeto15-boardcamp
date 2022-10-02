@@ -36,3 +36,15 @@ export async function postcustomers(req,res){
         res.sendStatus(500);
     }
 }
+export async function putcostumers(req,res){
+    const data = res.locals.data;
+    const id = res.locals.id;
+    try {
+        await connection.query('UPDATE costumers name=$1,phone=$2,cpf=$3,birthday=$4 WHERE id=$5',
+        [data.name,data.phone,data.cpf,data.birthday,id]);
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+}
