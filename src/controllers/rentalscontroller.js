@@ -1,5 +1,6 @@
 import connection from '../database/database.js'
 import dayjs from "dayjs";
+import Math from "math";
 
 export async function getrentalscontroller(req,res){
     const customerId = Number(req.query.customerId);
@@ -17,16 +18,10 @@ export async function getrentalscontroller(req,res){
         }
         for(let i=0; i<rentals.rows.length; i++){
             rentals.rows[i] = {
-                customerId: rentals.rows[i].customerId,
-                gameId: rentals.rows[i].gameId,
-                rentDate: rentals.rows[i].rentDate,
-                daysRented: rentals.rows[i].daysRented,
-                returnDate: rentals.rows[i].returnDate,
-                originalPrice: rentals.rows[i].originalPrice,
-                delayFee: rentals.rows[i].delayFee,
+                ...rentals.rows[i],
                 customer:{
                     id: rentals.rows[i].customerId,
-                    name: rentals.rows[i].namecostumer
+                    name: rentals.rows[i].namecustomer
                 },
                 game:{
                     id: rentals.rows[i].gameId,
@@ -34,7 +29,11 @@ export async function getrentalscontroller(req,res){
                     categoryId: rentals.rows[i].categoryId,
                     categoryName: rentals.rows[i].categoryName
                 }
-            }
+            };
+            delete rentals.rows[i].namecustomer;
+            delete rentals.rows[i].categoryId;
+            delete rentals.rows[i].gamename;
+            delete rentals.rows[i].categoryName;
         }
         res.send(rentals.rows);
     } catch (error) {
@@ -51,6 +50,33 @@ export async function postrentalscontroller(req,res){
         await connection.query('INSERT INTO rentals ("customerId","gameId","rentDate","daysRented","returnDate","originalPrice","delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)',
         [data.customerId,data.gameId,now,data.daysRented,null,originalPrice,null]);
         res.sendStatus(201);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+}
+export async function endrentalscontroller(req,res){
+    const id = req.params.id;
+    try {
+        const rent = await connection.query('SELECT * FROM rentals WHERE id=$1',[id]);
+        if(!rent.rows){
+            res.sendStatus(404);
+            return;
+        }else if(rent.rows[0].returnDate != null){
+            res.sendStatus(400);
+            return;
+        }
+        const returnDate = dayjs().format('YYYY-MM-DD');
+        const diff = Math.abs(dayjs().diff(rent.rows[0].rentDate,'day'));
+        const difference = diff - rent.rows[0].daysRented;
+        let delay = 0;
+        if(difference > 0){
+            const orig = rent.rows[0].originalPrice;
+            const price = orig / rent.rows[0].daysRented;
+            delay = price * difference;
+        }
+        await connection.query('UPDATE rentals SET "returnDate"=$1,"delayFee"=$2 WHERE id=$3',[returnDate,delay,id]);
+        res.sendStatus(200);
     } catch (error) {
         console.error(error);
         res.sendStatus(500);
